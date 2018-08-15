@@ -1,18 +1,35 @@
-using Test
-using BasePlus
+# Test design totally ripped off from DataFrames
 
-@testset "isnothing" begin
-    @test BasePlus.isnothing(nothing) == true
-    @test BasePlus.isnothing(1) == false
-    @test BasePlus.isnothing("A") == false
+#
+# Correctness Tests
+#
+
+fatalerrors = length(ARGS) > 0 && ARGS[1] == "-f"
+quiet = length(ARGS) > 0 && ARGS[1] == "-q"
+anyerrors = false
+
+using Test, BasePlus
+
+my_tests = ["BasePlus.jl"]
+
+println("Running tests:")
+
+for my_test in my_tests
+    try
+        include(my_test)
+        println("\t\033[1m\033[32mPASSED\033[0m: $(my_test)")
+    catch e
+        global anyerrors = true
+        println("\t\033[1m\033[31mFAILED\033[0m: $(my_test)")
+        if fatalerrors
+            rethrow(e)
+        elseif !quiet
+            showerror(stdout, e, backtrace())
+            println()
+        end
+    end
 end
 
-@testset "col/row counts" begin
-    M = rand(5, 2)
-    @test BasePlus.nrow(M) == 5
-    @test BasePlus.ncol(M) == 2
-    @test_throws MethodError BasePlus.nrow(1)
-    @test_throws MethodError BasePlus.nrow("A")
-    @test_throws MethodError BasePlus.ncol(1)
-    @test_throws MethodError BasePlus.ncol("A")
+if anyerrors
+    throw("Tests failed")
 end

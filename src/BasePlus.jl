@@ -22,4 +22,9 @@ function get(x::AbstractString)
 end
 =#
 
+export
+    nrow,
+    ncol,
+    isnothing
+
 end # module
